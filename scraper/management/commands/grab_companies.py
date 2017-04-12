@@ -1,5 +1,4 @@
 from httplib import HTTPException
-
 import requests
 from django.core.management import BaseCommand
 from scraper.models import Company
@@ -35,18 +34,22 @@ class Command(BaseCommand):
                 url = self.api_url.format(abbr=component)
                 response = requests.get(url, params={'modules': self.PROFILE})
                 payload = response.json()['quoteSummary']['result'][0][self.PROFILE]
-                company, created = Company.objects.get_or_create(
+                data = {
+                    'name': companies[component],
+                    'site': payload.get('website'),
+                    'street_address1': payload.get('address1'),
+                    'street_address2': payload.get('address2'),
+                    'city': payload.get('city'),
+                    'zip_code': payload.get('zip'),
+                    'country': payload.get('country'),
+                    'number_of_employee': payload.get('fullTimeEmployees'),
+                    'industry': payload.get('industry'),
+                }
+                company, created = Company.objects.update_or_create(
                     abbr=component,
-                    name=companies[component],
-                    # anannual_revenue=0.0,
-                    site=payload.get('website'),
-                    street_address1=payload.get('address1'),
-                    street_address2=payload.get('address2'),
-                    city=payload.get('city'),
-                    zip_code=payload.get('zip'),
-                    country=payload.get('country'),
-                    number_of_employee=payload.get('fullTimeEmployees'),
-                    industry=payload.get('industry'),
+                    defaults=data
                 )
                 if created:
                     print 'New company was created'
+                else:
+                    print 'Company {id} updated'.format(id=company.id)
