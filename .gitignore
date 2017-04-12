@@ -1,4 +1,4 @@
 .env
-*.sqllite3
+db.sqlite3
 .idea
-
+*.pyc
