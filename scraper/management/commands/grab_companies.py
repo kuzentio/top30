@@ -11,7 +11,7 @@ class Command(BaseCommand):
     api_url = 'https://query2.finance.yahoo.com/v10/finance/quoteSummary/{abbr}'
 
     @staticmethod
-    def get_companies(components):
+    def get_companies_names(components):
         url = 'https://query2.finance.yahoo.com/v7/finance/quote'
         params = {
             'symbols': ','.join(components),
@@ -29,13 +29,13 @@ class Command(BaseCommand):
         response = requests.get(self.components_url, params={'modules': self.COMPONENTS})
         if response.status_code == 200 and not response.json()['quoteSummary']['error']:
             components = response.json()['quoteSummary']['result'][0]['components']['components']
-            companies = self.get_companies(components)
+            names = self.get_companies_names(components)
             for component in components:
                 url = self.api_url.format(abbr=component)
                 response = requests.get(url, params={'modules': self.PROFILE})
                 payload = response.json()['quoteSummary']['result'][0][self.PROFILE]
                 data = {
-                    'name': companies[component],
+                    'name': names[component],
                     'site': payload.get('website'),
                     'street_address1': payload.get('address1'),
                     'street_address2': payload.get('address2'),
